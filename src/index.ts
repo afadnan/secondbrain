@@ -5,16 +5,17 @@ import { z } from "zod";
 import { userZodSchema } from "./validation";
 import { UserModel } from "./db";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
 dotenv.config();
-
-
 
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 4040;
+const JWT_SECRETS= process.env.JWT_SECRET || "";
 const MONGO_URL= process.env.MONGO_URL || "";
 if(!MONGO_URL){
-    throw new Error("MONGO URL is not a string");
+    console.error("MONGO URL is not a string");
 }
 async function main() {
   try {
@@ -31,13 +32,14 @@ async function main() {
   }
 }
 main();
-//@ts-ignore
+
 app.post("/api/v1/signup",async function (req:Request,res:Response){
   try {
     const validateUser = userZodSchema.parse(req.body);
     const existingUser = await UserModel.findOne({email : validateUser.email})
     if(existingUser){
-      return res.status(400).json({message:"This email alredy exists",email:validateUser.email})
+      res.status(400).json({message:"This email alredy exists",email:validateUser.email})
+      return
     }
     const passwordHash = await bcrypt.hash(validateUser.password,5)
     const newUser = await UserModel.create({
@@ -47,15 +49,13 @@ app.post("/api/v1/signup",async function (req:Request,res:Response){
     res.status(201).json({message:"user signup successfull",email:newUser.email})
   
   } catch (error:any) {
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
+    
+    if (error === z.ZodError) {
+      res.status(400).json({
         message: "Zod Validation Incorrect",
         errors: error.errors,
       });
     }
-
-    // Handle all other errors
     console.error("Internal Server Error:", error);
     res.status(500).json({
       message: "Internal Server Error",
@@ -64,12 +64,32 @@ app.post("/api/v1/signup",async function (req:Request,res:Response){
   }
 });
 
+app.post("/api/v1/signin",async function(req:Request, res:Response) {
+  try {
+    const validateUser = userZodSchema.parse(req.body);
+    const existingUser = await UserModel.findOne({ email: validateUser.email });
 
+    if (!existingUser) {
+      res.status(400).json({ message: "User does not exist with this email" });
+      return
+    }
 
-app.post("/api/v1/signin", function (req, res) {
-  const { email, password } = req.body;
-  
+    const storePassword = existingUser.password;
+    const matchPassword = await bcrypt.compare(validateUser.password, storePassword);
+
+    if (!matchPassword) {
+      res.status(400).json({ message: "Incorrect Password" });
+      return
+    }
+
+    const token = jwt.sign({ id: existingUser._id }, JWT_SECRETS, { expiresIn: "1h" });
+    res.status(200).json({ message: "Login successful", token });
+  } catch (error:any) {
+    res.status(500).json({ message: "Internal server error", error: error.message });
+    return 
+  }
 });
+
 
 app.post("/api/v1/content", function (req, res) {});
 
