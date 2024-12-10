@@ -71,16 +71,21 @@ app.post("/api/v1/signup",async function (req:Request,res:Response){
 
 app.post("/api/v1/signin",async function(req:Request, res:Response) {
   try {
-    const validateUser = userZodSchema.parse(req.body);
-    const existingUser = await UserModel.findOne({ email: validateUser.email });
-
-    if (!existingUser) {
-      res.status(400).json({ message: "User does not exist with this email" });
+    const {email,password} = req.body;
+    const validateUser = userZodSchema.safeParse({email,password});
+    if(!validateUser.success){
+      res.status(400).json({message:"follow the formate"})
+      console.error(validateUser.error.format())
       return
     }
+    const existingUser = await UserModel.findOne({ email: email });
 
+    if (!existingUser) {
+      res.status(400).json({ message: "User does not exist with this email,Please Signin First." });
+      return
+    }
     const storePassword = existingUser.password;
-    const matchPassword = await bcrypt.compare(validateUser.password, storePassword);
+    const matchPassword = await bcrypt.compare(password, storePassword);
 
     if (!matchPassword) {
       res.status(400).json({ message: "Incorrect Password" });
@@ -88,7 +93,7 @@ app.post("/api/v1/signin",async function(req:Request, res:Response) {
     }
 
     const token = jwt.sign({ id: existingUser._id }, JWT_SECRETS, { expiresIn: "1h" });
-    res.status(200).json({ message: "Login successful", token });
+    res.status(200).json({ message: `${email} signin successful `, token:token });
   } catch (error:any) {
     res.status(500).json({ message: "Internal server error", error: error.message });
     return 
