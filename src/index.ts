@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import express,{Request,Response} from "express";
 import mongoose from "mongoose";
 import { z } from "zod";
-import { userZodSchema } from "./validation";
 import { UserModel } from "./db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -33,33 +32,39 @@ async function main() {
 }
 main();
 
+const userZodSchema = z.object({
+  email:z.string().email("Invalid email formate").trim(),
+  password:z.string()
+  .min(7,"atlest more than 7 character")
+  .max(30,"not more than 30 character")
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*\W).*$/,"required atlest one uppercase,one lowercase,one number,one special character is required")
+})
+
 app.post("/api/v1/signup",async function (req:Request,res:Response){
   try {
-    const validateUser = userZodSchema.parse(req.body);
-    const existingUser = await UserModel.findOne({email : validateUser.email})
-    if(existingUser){
-      res.status(400).json({message:"This email alredy exists",email:validateUser.email})
+    const {email,password} = req.body;
+    const validateUser = userZodSchema.safeParse({email,password});
+    if(!validateUser.success){
+      res.status(400).json({message:"follow the formate"})
+      console.log(validateUser.error.format())
       return
     }
-    const passwordHash = await bcrypt.hash(validateUser.password,5)
+    const existingUser = await UserModel.findOne({email : email})
+    if(existingUser){
+      res.status(400).json({message:"This email alredy exists",email:email})
+      return
+    }
+    const passwordHash = await bcrypt.hash(password,5)
     const newUser = await UserModel.create({
-      email:validateUser.email,
+      email:email,
       password:passwordHash,
     })
     res.status(201).json({message:"user signup successfull",email:newUser.email})
   
   } catch (error:any) {
-    
-    if (error === z.ZodError) {
-      res.status(400).json({
-        message: "Zod Validation Incorrect",
-        errors: error.errors,
-      });
-    }
     console.error("Internal Server Error:", error);
     res.status(500).json({
       message: "Internal Server Error",
-      error: error.message || error,
     });
   }
 });
