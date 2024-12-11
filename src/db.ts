@@ -9,11 +9,11 @@ const userSchema = new Schema({
 const tagSchema = new Schema({
     title:{type:String}
 })
-const contentType = ["article","art","image","video","audio","politics","fun","personal"];
+const contentType = ['image', 'video', 'article', 'audio','tweets'];
 const contentSchema = new Schema({
-    title:{type:String},
+    title:{type:String,required:true},
     link:{type:String},
-    type:{type:String,enum:contentType},
+    type:{type:String,enum:contentType,required:true},
     tags:[{type:mongoose.Schema.Types.ObjectId, ref:"Tag", required:true}],
     userId:{type:mongoose.Schema.Types.ObjectId, ref:"User", required:true}
 })
