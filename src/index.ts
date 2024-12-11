@@ -40,6 +40,15 @@ const userZodSchema = z.object({
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*\W).*$/,"required atlest one uppercase,one lowercase,one number,one special character is required")
 })
 
+const contentZodSchema = z.object({
+  title:z.string(),
+  link:z.string().optional(),
+  type:z.enum(['image', 'video', 'article', 'audio','tweets']),
+  tags:z.string(),
+  userId:z.string()
+  .regex(/^[0-9a-fA-F]{24}$/,"Invalid ObjectId")
+})
+
 app.post("/api/v1/signup",async function (req:Request,res:Response){
   try {
     const {email,password} = req.body;
