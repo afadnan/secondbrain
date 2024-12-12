@@ -147,7 +147,7 @@ try {
   if(!userId){
     res.status(400).json({message:"User id is not there"})
   }
-  const content=await ContentModel.find({userId})
+  const content=await ContentModel.find({userId}).populate("userId","email")
   if(!content){
     res.status(400).json({message:"No content Present"})
   }
