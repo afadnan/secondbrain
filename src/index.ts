@@ -4,7 +4,8 @@ import mongoose from "mongoose";
 import { z } from "zod";
 import { UserModel } from "./db";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { userMiddleware} from "./middleware";
 
 dotenv.config();
 
@@ -108,9 +109,22 @@ app.post("/api/v1/signin",async function(req:Request, res:Response) {
     return 
   }
 });
+interface AuthenticatedRequest extends Request {
+  User: JwtPayload | string;
+}
+
+app.post("/api/v1/content",userMiddleware,(req: Request, res: Response) => {
+    try {
+      const userId =  (req as AuthenticatedRequest).User as{id:string}; // Access the `User` field added by middleware
+      const onlyUserId = userId.id;
+      res.status(200).json({ message: "User ID received", onlyUserId });
+    } catch (error: any) {
+      res.status(500).json({ message: "Something went wrong", error: error.message });
+    }
+  }
+);
 
 
-app.post("/api/v1/content", function (req, res) {});
 
 app.get("/api/v1/content", function (req, res) {});
 
