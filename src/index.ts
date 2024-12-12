@@ -140,7 +140,24 @@ app.post("/api/v1/content",userMiddleware,async (req: Request, res: Response) =>
 
 
 
-app.get("/api/v1/content", function (req, res) {});
+app.get("/api/v1/content",userMiddleware,async (req:Request,res:Response)=>{
+try {
+  const user=(req as AuthenticatedRequest).User as {id:string,iat:number,exp:number}
+  const userId=user.id;
+  if(!userId){
+    res.status(400).json({message:"User id is not there"})
+  }
+  const content=await ContentModel.find({userId}).populate("userId")
+  if(!content){
+    res.status(400).json({message:"No content Present"})
+  }
+  res.status(200).json({message:"All Your Content : ", content : content})
+} catch (e:any) {
+  res.status(500).json({message:"Internal Server Error"})
+  return
+}
+})
+
 
 app.delete("/api/v1/content", function (req, res) {});
 

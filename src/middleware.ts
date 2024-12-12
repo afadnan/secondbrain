@@ -10,7 +10,7 @@ export interface AuthenticatedRequest extends Request {
   User: JwtPayload | string;
 }
 
-export function userMiddleware(req: Request, res: Response, next: NextFunction): void {
+export function userMiddleware(req: Request, res: Response, next: NextFunction){
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
