@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express,{Request,Response} from "express";
 import mongoose from "mongoose";
 import { z } from "zod";
-import { UserModel } from "./db";
+import { ContentModel, UserModel } from "./db";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { userMiddleware} from "./middleware";
@@ -45,7 +45,7 @@ const contentZodSchema = z.object({
   title: z.string(), // 
   link: z.string().optional(), // 
   type: z.enum(['image', 'video', 'article', 'audio']), 
-  tags: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId")), 
+  tags: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId").optional()), 
   userId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId") 
 });
 
@@ -113,13 +113,27 @@ interface AuthenticatedRequest extends Request {
   User: JwtPayload | string;
 }
 
-app.post("/api/v1/content",userMiddleware,(req: Request, res: Response) => {
+app.post("/api/v1/content",userMiddleware,async (req: Request, res: Response) => {
     try {
-      const userId =  (req as AuthenticatedRequest).User as{id:string}; // Access the `User` field added by middleware
-      const onlyUserId = userId.id;
-      res.status(200).json({ message: "User ID received", onlyUserId });
+      const user =  (req as AuthenticatedRequest).User as{id:string; iat: number; exp: number }; // Access the `User` field added by middleware
+      const userId = user.id;
+      const {title,link,type,tags} = req.body
+      const content = contentZodSchema.safeParse({title,link,type,tags,userId})
+      if(!content.success){
+        res.status(403).json({message:"Invaild format for content",error:content.error.errors})
+        return
+      }
+      const createContent = await ContentModel.create({
+        title,
+        link,
+        type,
+        tags,
+        userId
+      }) 
+      res.status(201).json({message:"Created Content",content:createContent})
     } catch (error: any) {
       res.status(500).json({ message: "Something went wrong", error: error.message });
+      return
     }
   }
 );
@@ -133,3 +147,18 @@ app.delete("/api/v1/content", function (req, res) {});
 app.post("/api/v1/brain/share", function (req, res) {});
 
 app.get("/api/v1/brain/:shareLink", function (req, res) {});
+
+/*
+{
+  "email":"Zen@gmail.com",
+  "password":"Zen@1234"
+}
+  */
+/*
+{
+  "title":"test",
+  "link":"",
+  "type":"",
+  "tags":""
+}
+*/
