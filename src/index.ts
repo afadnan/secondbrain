@@ -148,7 +148,7 @@ try {
     res.status(400).json({message:"User id is not there"})
   }
   const content=await ContentModel.find({userId}).populate("userId","email")
-  if(!content){
+  if(!content || content.length === 0){
     res.status(400).json({message:"No content Present"})
   }
   res.status(200).json({message:"All Your Content : ", content : content})
@@ -159,7 +159,37 @@ try {
 })
 
 
-app.delete("/api/v1/content", function (req, res) {});
+app.delete("/api/v1/content", userMiddleware, async function (req: Request, res: Response) {
+  try {
+    const user = (req as AuthenticatedRequest).User as { id: string; iat: number; exp: number };
+    const userId = user.id; 
+    const contentId = req.body.contentId;
+
+    if (!contentId) {
+      res.status(400).json({ message: "Content ID is required" });
+      return;
+    }
+
+
+    const contentExists = await ContentModel.findOne({ _id: contentId, userId });
+    if (!contentExists) {
+      res.status(400).json({ message: "This content does not belong to the user or does not exist" });
+      return;
+    }
+
+    const contentDelete = await ContentModel.deleteOne({ _id: contentId, userId });
+    if (contentDelete.deletedCount === 0) {
+      res.status(400).json({ message: "This content does not belong to the user" });
+      return;
+    }
+
+    res.status(200).json({ message: "Content Deleted" });
+  } catch (e: any) {
+    console.error("Something went wrong:", e);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 
 app.post("/api/v1/brain/share", function (req, res) {});
 
