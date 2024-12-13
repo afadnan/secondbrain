@@ -150,6 +150,7 @@ try {
   const content=await ContentModel.find({userId}).populate("userId","email")
   if(!content || content.length === 0){
     res.status(400).json({message:"No content Present"})
+    return
   }
   res.status(200).json({message:"All Your Content : ", content : content})
 } catch (e:any) {
