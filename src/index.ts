@@ -2,10 +2,11 @@ import dotenv from "dotenv";
 import express,{Request,Response} from "express";
 import mongoose from "mongoose";
 import { z } from "zod";
-import { ContentModel, UserModel } from "./db";
+import { ContentModel, LinkModel, UserModel } from "./db";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { userMiddleware} from "./middleware";
+import { randomHash } from "./utils";
 
 dotenv.config();
 
@@ -34,10 +35,14 @@ async function main() {
 main();
 
 const userZodSchema = z.object({
+  userName:z.string()
+  .min(3,"Atlest more than 3 character")
+  .max(30,"Not more than 30 character")
+  .trim(),
   email:z.string().email("Invalid email formate").trim(),
   password:z.string()
-  .min(7,"atlest more than 7 character")
-  .max(30,"not more than 30 character")
+  .min(7,"Atlest more than 7 character")
+  .max(30,"Not more than 30 character")
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*\W).*$/,"required atlest one uppercase,one lowercase,one number,one special character is required")
 })
 
@@ -52,8 +57,8 @@ const contentZodSchema = z.object({
 
 app.post("/api/v1/signup",async function (req:Request,res:Response){
   try {
-    const {email,password} = req.body;
-    const validateUser = userZodSchema.safeParse({email,password});
+    const {userName,email,password} = req.body;
+    const validateUser = userZodSchema.safeParse({userName,email,password});
     if(!validateUser.success){
       res.status(400).json({message:"follow the formate"})
       console.log(validateUser.error.format())
@@ -66,7 +71,8 @@ app.post("/api/v1/signup",async function (req:Request,res:Response){
     }
     const passwordHash = await bcrypt.hash(password,5)
     const newUser = await UserModel.create({
-      email:email,
+      userName,
+      email,
       password:passwordHash,
     })
     res.status(201).json({message:"user signup successfull",email:newUser.email})
@@ -81,8 +87,8 @@ app.post("/api/v1/signup",async function (req:Request,res:Response){
 
 app.post("/api/v1/signin",async function(req:Request, res:Response) {
   try {
-    const {email,password} = req.body;
-    const validateUser = userZodSchema.safeParse({email,password});
+    const {userName,email,password} = req.body;
+    const validateUser = userZodSchema.safeParse({userName,email,password});
     if(!validateUser.success){
       res.status(400).json({message:"follow the formate"})
       console.error(validateUser.error.format())
@@ -103,7 +109,7 @@ app.post("/api/v1/signin",async function(req:Request, res:Response) {
     }
 
     const token = jwt.sign({ id: existingUser._id }, JWT_SECRETS, { expiresIn: "1h" });
-    res.status(200).json({ message: `${email} signin successful `, token:token });
+    res.status(200).json({ message: `${userName} signin successful `, token:token });
   } catch (error:any) {
     res.status(500).json({ message: "Internal server error", error: error.message });
     return 
@@ -192,15 +198,69 @@ app.delete("/api/v1/content", userMiddleware, async function (req: Request, res:
 });
 
 
-app.post("/api/v1/brain/share", function (req, res) {});
+app.post("/api/v1/brain/share",userMiddleware,async function (req:Request, res:Response) {
+  const user = (req as AuthenticatedRequest).User as {id:string;iat:number;exp:number};
+  const userId=user.id;
+  const share = req.body.share;
+  if(share){
+    const existingLink = await LinkModel.findOne({
+      userId
+    })
+    if(existingLink){
+      res.json({
+        hash: existingLink.hash
+      })
+      return;
+    }
+    const hash = randomHash(10)
+    const link = await LinkModel.create({
+      userId,
+      hash
+    })
+    res.status(200).json({hash})
+  }else{
+    await LinkModel.deleteOne({
+      userId
+    })
+    res.status(200).json({
+      message:"removed Sharable Link"
+    })
+  }
+});
 
-app.get("/api/v1/brain/:shareLink", function (req, res) {});
+app.get("/api/v1/brain/:shareLink",async function (req, res) {
+  const hash = req.params.shareLink;
+
+  const link = await LinkModel.findOne({
+    hash
+  })
+  if(!link){
+    res.status(400).json({message:"Sorry incorrect Input"})
+    return
+  }
+
+  const content = await ContentModel.find({
+    userId:link.userId
+  })
+
+  const user = await UserModel.findOne({
+    userId:link.userId
+  })
+  if(!user){
+    res.status(400).json({message:"User not found,erro should ideally not happen"})
+  return;
+  }
+
+  res.json({
+    username:user.userName,
+    content:content
+  })
+});
 
 /*
-{
-  "email":"Zen@gmail.com",
-  "password":"Zen@1234"
-}
+"userName":"Zan",
+    "email":"Zan@dev.com",
+    "password":"Zen@1234"
   */
 /*
 {
