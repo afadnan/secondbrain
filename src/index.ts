@@ -239,38 +239,47 @@ app.post("/api/v1/brain/share", userMiddleware, async function (req: Request, re
 
 
 
+app.get("/api/v1/brain/:shareLink", async function (req, res) {
+  try {
+    const hash = req.params.shareLink;
+    console.log("Share Link (hash):", hash);
 
+    // Find the shared link
+    const link = await LinkModel.findOne({ hash });
+    if (!link) {
+      console.log("No link found for hash:", hash);
+      res.status(404).json({ message: "Invalid share link" });
+      return;
+    }
+    console.log("Link object:", link);
 
+    // Retrieve content
+    const content = await ContentModel.find({ userId: link.userId });
+    console.log("Content fetched:", content);
 
+    // Retrieve user using _id instead of userId
+    const user = await UserModel.findOne({ _id: link.userId });
+    if (!user) {
+      console.log("User not found for userId:", link.userId);
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    console.log("User fetched:", user);
 
-app.get("/api/v1/brain/:shareLink",async function (req, res) {
-  const hash = req.params.shareLink;
-
-  const link = await LinkModel.findOne({
-    hash
-  })
-  if(!link){
-    res.status(400).json({message:"Sorry incorrect Input"})
-    return
+    // Respond with user and content
+    res.json({
+      user: { username: user.userName },
+      content,
+    });
+  } catch (error) {
+    console.error("Error retrieving brain data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-
-  const content = await ContentModel.find({
-    userId:link.userId
-  })
-
-  const user = await UserModel.findOne({
-    userId:link.userId
-  })
-  if(!user){
-    res.status(400).json({message:"User not found,erro should ideally not happen"})
-  return;
-  }
-
-  res.json({
-    username:user.userName,
-    content:content
-  })
 });
+
+
+
+
 
 /*
 "userName":"Zan",
@@ -279,9 +288,18 @@ app.get("/api/v1/brain/:shareLink",async function (req, res) {
   */
 /*
 {
-  "title":"test",
-  "link":"",
-  "type":"",
-  "tags":""
+  {
+ "title": "bitcoin whitepaper",
+    "link": "bitcoinwhitepaper.pdf",
+    "type": "article",
+    "tags": []
+}
 }
 */
+/*
+{
+ "userName":"Asd",
+  "email":"asd@gmail.com",
+  "password":"Asd@1234"
+}
+  */
