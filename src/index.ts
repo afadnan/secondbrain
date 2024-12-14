@@ -197,36 +197,51 @@ app.delete("/api/v1/content", userMiddleware, async function (req: Request, res:
   }
 });
 
+app.post("/api/v1/brain/share", userMiddleware, async function (req: Request, res: Response) {
+  const user = (req as AuthenticatedRequest).User as { id: string; iat: number; exp: number };
+  const userId = user.id;
+  const share:boolean = req.body.share;
+  console.log(share);
+  console.log(typeof share);
+  if (share) {
+    try {
+      const existingLink = await LinkModel.findOne({ userId });
+      if (existingLink) {
+        res.status(200).json({ hash: existingLink.hash });
+        return 
+      }
 
-app.post("/api/v1/brain/share",userMiddleware,async function (req:Request, res:Response) {
-  const user = (req as AuthenticatedRequest).User as {id:string;iat:number;exp:number};
-  const userId=user.id;
-  const share = req.body.share;
-  if(share){
-    const existingLink = await LinkModel.findOne({
-      userId
-    })
-    if(existingLink){
-      res.json({
-        hash: existingLink.hash
-      })
-      return;
+      const hash = randomHash(10);
+      const link = await LinkModel.create({ userId, hash });
+      res.status(200).json({ hash });
+      return
+    } catch (error) {
+      console.error("Error creating or fetching link:", error);
+      res.status(500).json({ message: "An error occurred" });
+      return
     }
-    const hash = randomHash(10)
-    const link = await LinkModel.create({
-      userId,
-      hash
-    })
-    res.status(200).json({hash})
-  }else{
-    await LinkModel.deleteOne({
-      userId
-    })
-    res.status(200).json({
-      message:"removed Sharable Link"
-    })
+  } else {
+    try {
+      const result = await LinkModel.deleteOne({ userId });
+      if (result.deletedCount === 0) {
+        res.status(404).json({ message: "No link found to delete" });
+        return
+      }
+      res.status(200).json({ message: "Removed Sharable Link" });
+      return
+    } catch (error) {
+      console.error("Error deleting link:", error);
+      res.status(500).json({ message: "An error occurred" });
+      return
+    }
   }
 });
+
+
+
+
+
+
 
 app.get("/api/v1/brain/:shareLink",async function (req, res) {
   const hash = req.params.shareLink;
