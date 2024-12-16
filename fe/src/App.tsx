@@ -1,12 +1,13 @@
-
+import { Button } from "./components/Button"
+import { PlusIcon } from "./icons/PlusIcon"
+import { ShareIcon } from "./icons/ShareIcon"
 function App() {
 
 
   return (
     <div>
-       <h1 className="text-3xl font-bold">
-      Hello world!
-    </h1>
+    <Button variant="primary" text="Add Content" startIcon={<PlusIcon />}></Button>
+    <Button variant="secondary" text="Share Brain" startIcon={<ShareIcon />}></Button>
     </div>
       )
 }
