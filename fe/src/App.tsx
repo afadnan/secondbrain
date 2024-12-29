@@ -6,10 +6,15 @@ function App() {
 
 
   return (
-    <div>
-    <Button variant="primary" text="Add Content" startIcon={<PlusIcon />}></Button>
-    <Button variant="secondary" text="Share Brain" startIcon={<ShareIcon />}></Button>
-    <Card type="twitter" link="https://x.com/cute_catse/status/1869782853237797325" title="First Tweet"/>
+    <div className="p-6">
+      <div className="flex justify-end gap-4">
+        <Button variant="primary" text="Add Content" startIcon={<PlusIcon />}></Button>
+        <Button variant="secondary" text="Share Brain" startIcon={<ShareIcon />}></Button>
+      </div>
+    <div className="flex gap-4">
+      <Card type="twitter" link="https://x.com/cute_catse/status/1869782853237797325" title="First Tweet"/>
+      <Card type="youtube" link="https://www.youtube.com/watch?v=z7Uv_A4bG-U" title="First YouTube Video"/>
+    </div>
     </div>
       )
 }
