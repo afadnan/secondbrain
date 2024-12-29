@@ -6,7 +6,7 @@ function App() {
 
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <div className="flex justify-end gap-4">
         <Button variant="primary" text="Add Content" startIcon={<PlusIcon />}></Button>
         <Button variant="secondary" text="Share Brain" startIcon={<ShareIcon />}></Button>
