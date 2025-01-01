@@ -7,7 +7,7 @@ export function Sidebar(){
     return (
     <div className="h-screen w-72 border-r fixed left-0 top-0 pl-4">
         <div className="flex text-2xl pt-6 font-bold items-center pt-4">
-            <div className="pr-3 text-purple-600">
+            <div className="pr-3 text-purple-600 ">
             <Logo />
             </div>
             Second Brain
