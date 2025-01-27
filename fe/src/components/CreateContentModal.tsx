@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CrossIcon } from "../icons/CrossIcon";
 import { Button } from "./Button";
+import { Input } from "../components/Input";
 
 //controlled component
 export function CreateContentModal({open,onClose}:any){
