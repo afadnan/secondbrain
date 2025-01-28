@@ -7,17 +7,22 @@ import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { userMiddleware} from "./middleware";
 import { randomHash } from "./utils";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 const PORT = process.env.PORT || 4040;
 const JWT_SECRETS= process.env.JWT_SECRET || "";
 const MONGO_URL= process.env.MONGO_URL || "";
+
 if(!MONGO_URL){
-    console.error("MONGO URL is not a string");
+  console.error("MONGO_URL is not defined in the environment variables.");
+  process.exit(1);
 }
+
 async function main() {
   try {
     console.log("Connecting to DB");

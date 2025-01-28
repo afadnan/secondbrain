@@ -4,7 +4,7 @@ const {Schema} = mongoose;
 
 const userSchema = new Schema({
     userName:{type:String,required:true},
-    email:{type:String,required:true,unique:true},
+    email:{type:String},
     password:{type:String,required:true}
 })
 const tagSchema = new Schema({
