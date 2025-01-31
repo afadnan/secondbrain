@@ -6,20 +6,27 @@ import { BACKEND_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 
 export function Signup() {
-    const usernameRef = useRef<HTMLInputElement>();
-    const passwordRef = useRef<HTMLInputElement>();
+    const usernameRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
     async function signup() {
-        const username = usernameRef.current?.value;
-        console.log(usernameRef.current)
-        const password = passwordRef.current?.value;
-        await axios.post(BACKEND_URL + "/api/v1/signup", {
-            username,
-            password
-        })
-        navigate("/signin")
-        alert("You have signed up!")
+        const username = usernameRef.current?.value || "";
+        const password = passwordRef.current?.value || "";
+
+        console.log("Sending request:", { username, password });
+
+        try {
+            await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+                userName:username,
+                password
+            });
+            alert("You have signed up!");
+            navigate("/signin");
+        } catch (error :any) {
+            console.error("Signup failed:", error.response?.data || error.message);
+            alert("Signup failed! Check console.");
+        }
     }
 
     return <div className="h-screen w-screen bg-gray-200 flex justify-center items-center">
