@@ -21,8 +21,12 @@ export function CreateContentModal({open,onClose}:any){
     
 
      return <div>
-        {open &&  <div className="w-screen h-screen fixed top-0 left-0 bg-slate-500 opacity-60 flex justify-center">
+        {open && <div>  <div className="w-screen h-screen fixed top-0 left-0 bg-slate-500 opacity-60 flex justify-center">
+            
+            </div>
+            <div className="w-screen h-screen fixed top-0 left-0 flex justify-center">
             <div className="flex flex-col justify-center">
+
                 <span className="bg-white p-4 rounded-md">
                     <div className="flex justify-end">
                         <div onClick={onClose} className="cursor-pointer">
@@ -34,9 +38,9 @@ export function CreateContentModal({open,onClose}:any){
                         <Input reference={linkRef} placeholder={"Link"} />
 
                     </div>
-                    <h1 className="p-1">Type</h1>
+                    <h1 className="p-1 font-semibold">Type</h1>
 
-                    <div className="flex p-4 gap-2">
+                    <div className="flex p-4 gap-2 justify-center">
                         <div className="">
                         <Button text="Youtube" variant={type === ContentType.Youtube ? "primary" : "secondary"} onClick={() => {setType(ContentType.Youtube)}}></Button>
                         </div>
@@ -46,8 +50,10 @@ export function CreateContentModal({open,onClose}:any){
                         <Button onClick={addContent} variant="primary" text="Submit" />
                     </div>
                 </span>
-            </div>
-        </div> }
+        
+        </div> 
+        </div>
+        </div>}
      </div>
 }
 
