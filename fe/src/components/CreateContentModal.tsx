@@ -15,7 +15,8 @@ export function CreateContentModal({open,onClose}:any){
     const linkRef = useRef<HTMLInputElement>();
     const [type,setType] =  useState(ContentType.Youtube)
     function addContent() {
-
+        const title = titleRef.current?.value;
+        const link = linkRef.current?.value;
     }
     
 
@@ -29,12 +30,17 @@ export function CreateContentModal({open,onClose}:any){
                         </div>
                     </div>
                     <div>
-                        <Input placeholder={"Title"} />
-                        <Input placeholder={"Link"} />
+                        <Input reference={titleRef} placeholder={"Title"} />
+                        <Input reference={linkRef} placeholder={"Link"} />
+
                     </div>
-                    <div>
-                        <Button text="Youtube" variant={type === ContentType.Twitter ? "primary" : "secondary"} onClick={() => {setType(ContentType.Youtube)}}></Button>
-                        <Button text="Youtube" variant={type === ContentType.Twitter ? "primary" : "secondary"} onClick={() => {setType(ContentType.Twitter)}}></Button>
+                    <h1 className="p-1">Type</h1>
+
+                    <div className="flex p-4 gap-2">
+                        <div className="">
+                        <Button text="Youtube" variant={type === ContentType.Youtube ? "primary" : "secondary"} onClick={() => {setType(ContentType.Youtube)}}></Button>
+                        </div>
+                        <Button text="Twitter" variant={type === ContentType.Twitter ? "primary" : "secondary"} onClick={() => {setType(ContentType.Twitter)}}></Button>
                     </div>
                     <div className="flex justify-center">
                         <Button onClick={addContent} variant="primary" text="Submit" />
