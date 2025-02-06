@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { CrossIcon } from "../icons/CrossIcon";
 import { Button } from "./Button";
 import { Input } from "../components/Input";
+import { BACKEND_URL } from "../config";
+import axios from "axios";
 
 enum ContentType {
     Youtube = "youtube",
@@ -14,9 +16,25 @@ export function CreateContentModal({open,onClose}:any){
     const titleRef = useRef<HTMLInputElement>();
     const linkRef = useRef<HTMLInputElement>();
     const [type,setType] =  useState(ContentType.Youtube)
-    function addContent() {
+    async function addContent() {
         const title = titleRef.current?.value;
         const link = linkRef.current?.value;
+        const token = localStorage.getItem("token");
+
+    if (!token) {
+        console.error("Token is missing!");
+        return;
+    }
+
+        await axios.post(`${BACKEND_URL}/api/v1/content`,{
+            link,
+            title,
+            type
+        },{
+            headers:{
+                "Authorization": localStorage.getItem("token")
+            }
+        })
     }
     
 
