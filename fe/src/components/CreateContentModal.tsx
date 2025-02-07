@@ -10,32 +10,30 @@ enum ContentType {
     Twitter = "twitter"
 }
 
-//controlled component
-export function CreateContentModal({open,onClose}:any){
 
-    const titleRef = useRef<HTMLInputElement>();
-    const linkRef = useRef<HTMLInputElement>();
-    const [type,setType] =  useState(ContentType.Youtube)
-    async function addContent() {
-        const title = titleRef.current?.value;
-        const link = linkRef.current?.value;
-        const token = localStorage.getItem("token");
+export function CreateContentModal({ open, onClose }: any) {
+  const titleRef = useRef<HTMLInputElement>();
+  const linkRef = useRef<HTMLInputElement>();
+  const [type, setType] = useState(ContentType.Youtube);
+  
 
-    if (!token) {
-        console.error("Token is missing!");
-        return;
-    }
+  async function addContent() {
+    const title = titleRef.current?.value;
+    const link = linkRef.current?.value;
+    const token = localStorage.getItem("token");
+    console.log("Sending Token:", token);
 
-        await axios.post(`${BACKEND_URL}/api/v1/content`,{
-            link,
-            title,
-            type
-        },{
-            headers:{
-                "Authorization": localStorage.getItem("token")
-            }
-        })
-    }
+    await axios.post(`${BACKEND_URL}/api/v1/content`,{
+        link,
+        title,
+        type
+    },{
+        headers: {
+            "Authorization": localStorage.getItem("token")
+        }
+    })
+
+}
     
 
      return <div>

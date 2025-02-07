@@ -16,6 +16,7 @@ app.use(express.json());
 app.use(cors());
 const PORT = process.env.PORT || 4040;
 const JWT_SECRETS= process.env.JWT_SECRET || "";
+console.log("indexedDB.ts Secret:",JWT_SECRETS);
 const MONGO_URL= process.env.MONGO_URL || "";
 
 if(!MONGO_URL){
@@ -113,23 +114,27 @@ app.post("/api/v1/signin",async function(req:Request, res:Response) {
       return
     }
 
-    const token = jwt.sign({ id: existingUser._id }, JWT_SECRETS, { expiresIn: "1h" });
-    res.status(200).json({ message: `${userName} signin successful `, token:token });
+    const authorization = jwt.sign({ id: existingUser._id }, JWT_SECRETS, { expiresIn: "24h" });
+    res.status(200).json({ message: `${userName} signin successful `, token:authorization });
+    
+
+    console.log("User Signin Token :", authorization);
+    
   } catch (error:any) {
     res.status(500).json({ message: "Internal server error", error: error.message });
     return 
   }
 });
 interface AuthenticatedRequest extends Request {
-  User: JwtPayload | string;
+  User?: JwtPayload | string;
 }
 
 app.post("/api/v1/content",userMiddleware,async (req: Request, res: Response) => {
     try {
       const user =  (req as AuthenticatedRequest).User as{id:string; iat: number; exp: number }; // Access the `User` field added by middleware
       const userId = user.id;
-      const {title,link,type,tags} = req.body
-      const content = contentZodSchema.safeParse({title,link,type,tags,userId})
+      const {title,link,type} = req.body
+      const content = contentZodSchema.safeParse({title,link,type,userId})
       if(!content.success){
         res.status(403).json({message:"Invaild format for content",error:content.error.errors})
         return
@@ -138,8 +143,7 @@ app.post("/api/v1/content",userMiddleware,async (req: Request, res: Response) =>
         title,
         link,
         type,
-        tags,
-        userId
+        userId:user.id,
       }) 
       res.status(201).json({message:"Created Content",content:createContent})
     } catch (error: any) {
@@ -154,6 +158,7 @@ app.post("/api/v1/content",userMiddleware,async (req: Request, res: Response) =>
 app.get("/api/v1/content",userMiddleware,async (req:Request,res:Response)=>{
 try {
   const user=(req as AuthenticatedRequest).User as {id:string,iat:number,exp:number}
+  console.log("Inside get content :",user);
   const userId=user.id;
   if(!userId){
     res.status(400).json({message:"User id is not there"})
