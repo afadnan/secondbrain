@@ -53,12 +53,13 @@ const userZodSchema = z.object({
 })
 
 const contentZodSchema = z.object({
-  title: z.string(), // 
-  link: z.string().optional(), // 
-  type: z.enum(['image', 'video', 'article', 'audio']), 
-  tags: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId").optional()), 
-  userId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId") 
+  title: z.string(), 
+  link: z.string().optional(), 
+  type: z.enum(['image', 'video', 'article', 'audio']).optional(), 
+  tags: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId")).optional(), 
+  userId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId").optional()
 });
+
 
 
 app.post("/api/v1/signup",async function (req:Request,res:Response){
@@ -114,7 +115,7 @@ app.post("/api/v1/signin",async function(req:Request, res:Response) {
       return
     }
 
-    const authorization = jwt.sign({ id: existingUser._id }, JWT_SECRETS, { expiresIn: "24h" });
+    const authorization = jwt.sign({ id: existingUser._id }, JWT_SECRETS);
     res.status(200).json({ message: `${userName} signin successful `, token:authorization });
     
 
@@ -158,7 +159,7 @@ app.post("/api/v1/content",userMiddleware,async (req: Request, res: Response) =>
 app.get("/api/v1/content",userMiddleware,async (req:Request,res:Response)=>{
 try {
   const user=(req as AuthenticatedRequest).User as {id:string,iat:number,exp:number}
-  console.log("Inside get content :",user);
+  console.log("Inside get /api/v1/content  :",user);
   const userId=user.id;
   if(!userId){
     res.status(400).json({message:"User id is not there"})
