@@ -5,9 +5,11 @@ import { CreateContentModal } from "../components/CreateContentModal"
 import { PlusIcon } from "../icons/PlusIcon"
 import { ShareIcon } from "../icons/ShareIcon"
 import { Sidebar } from "../components/Sidebar"
+import { useContent } from "../hooks/useContent"
 
 function Dashboard() {
   const [modalOpen,setModalOpen] = useState(false);
+  const contents = useContent();
 
   return (
     <div>
@@ -22,8 +24,11 @@ function Dashboard() {
         <Button variant="secondary" text="Share Brain" startIcon={<ShareIcon />}></Button>
       </div>
     <div className="flex gap-4">
-      <Card type="twitter" link="https://x.com/cute_catse/status/1869782853237797325" title="First Tweet"/>
-      <Card type="youtube" link="https://www.youtube.com/watch?v=z7Uv_A4bG-U" title="First YouTube Video"/>
+      {contents.map(({title,link,type})=> <Card 
+      type={type} 
+      link={link} 
+      title={title} />)}
+      {/* <Card type="youtube" link="https://www.youtube.com/watch?v=z7Uv_A4bG-U" title="First YouTube Video"/> */}
     </div>
     </div>
     </div>

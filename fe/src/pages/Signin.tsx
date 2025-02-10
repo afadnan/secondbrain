@@ -26,8 +26,8 @@ export function Signin() {
             });
             const jwt = response.data.token;
             localStorage.setItem("token",jwt);
-            
             navigate("/dashboard");
+            
         } catch (error :any) {
             console.error("Signin failed:", error.response?.data || error.message);
             alert("Signin failed! Check console.");
