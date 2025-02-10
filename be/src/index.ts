@@ -55,7 +55,7 @@ const userZodSchema = z.object({
 const contentZodSchema = z.object({
   title: z.string(), 
   link: z.string().optional(), 
-  type: z.enum(['image', 'video', 'article', 'audio']).optional(), 
+  type: z.enum(['image', 'video', 'article', 'audio','twitter','youtube']).optional(), 
   tags: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId")).optional(), 
   userId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId").optional()
 });

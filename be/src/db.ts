@@ -10,7 +10,7 @@ const userSchema = new Schema({
 const tagSchema = new Schema({
     title:{type:String}
 })
-const contentType = ['image', 'video', 'article', 'audio','tweets'];
+const contentType = ['image', 'video', 'article', 'audio','twitter','youtube'];
 const contentSchema = new Schema({
     title:{type:String,required:true},
     link:{type:String},
