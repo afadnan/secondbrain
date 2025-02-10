@@ -29,7 +29,7 @@ export function CreateContentModal({ open, onClose }: any) {
         type
     },{
         headers: {
-            "Authorization": localStorage.getItem("token")
+            "Authorization": "Bearer " + localStorage.getItem("token")
         }
     })
 

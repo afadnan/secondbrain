@@ -19,11 +19,13 @@ export function Signin() {
         console.log("Sending request:", { username,email, password });
 
         try {
-            await axios.post(`${BACKEND_URL}/api/v1/signin`, {
+            const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
                 userName:username,
                 email,
                 password
             });
+            const jwt = response.data.token;
+            localStorage.setItem("token",jwt);
             
             navigate("/dashboard");
         } catch (error :any) {
